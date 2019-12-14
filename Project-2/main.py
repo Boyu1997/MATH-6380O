@@ -14,4 +14,4 @@ train_loader, validate_loader, test_loader = load_data()
 vgg16 = vgg16()
 
 # set one_batch to True for small local cpu testing
-train_model(vgg16, 'vgg16', train_loader, validate_loader, 50, device)
+train_model(vgg16, 'vgg16', train_loader, validate_loader, 3, device, one_batch=True)

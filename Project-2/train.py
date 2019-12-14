@@ -66,7 +66,7 @@ def validate(model, device, validate_loader, criterion, one_batch):
 def train_model(model, model_name, trainloader, validateloader, epochs, device, print_training_every=1, one_batch=False):
 
     criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     training_loss_list = []
     training_accuracy_list = []

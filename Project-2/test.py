@@ -16,10 +16,9 @@ def model_test(model, loader, device):
 
             # model output
             outputs = model(inputs)
+            predicted = torch.max(outputs.data,1)[1]
 
-            # update loss and accuracy
-            _, predicted = torch.max(outputs.data, 1)
-
+            # convert to list
             predicted = predicted.tolist()
             img = list(img)
 
