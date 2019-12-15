@@ -4,18 +4,26 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 
 class KaggleDataset(Dataset):
-    def __init__(self, dataset): # to normalize data, transform = [mean, std] self.left_temps = df['Left_Temps'].values
+    def __init__(self, dataset, transform=None, test=False): # to normalize data, transform = [mean, std] self.left_temps = df['Left_Temps'].values
         self.dataset = dataset
-        self.imgs = dataset.imgs
+        if test:
+            self.imgs = dataset.imgs
+        self.transform = transform
+        self.test = test
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         data = self.dataset[idx][0]
+        if self.transform:
+            data = self.transform(data)
         label = 0 if self.dataset[idx][1] else 1
-        img = self.imgs[idx][0].split("/")[-1].split(".")[0]
-        return data, label, img
+        if self.test:
+            img = self.imgs[idx][0].split("/")[-1].split(".")[0]
+            return data, label, img
+        else:
+            return data, label, 0
 
 def build_balancing_sampler(dataset):
     weights = []
@@ -28,29 +36,36 @@ def build_balancing_sampler(dataset):
     sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
     return sampler
 
-def load_data(train_validation_split=0.8, batch_size=32, num_workers=4):
+def load_data(train_validation_split=0.8, batch_size=128, num_workers=4):
 
-    transform = transforms.Compose([
+    # define dataset
+    train_data = datasets.ImageFolder(root='data/train')
+    test_data = datasets.ImageFolder(root='data/test')
+
+    # split train dataset into train and validate
+    train_size = int(len(train_data) * 0.8)
+    validate_size = len(train_data) - train_size
+    train_data, validate_data = torch.utils.data.random_split(train_data, [train_size, validate_size])
+
+    # define transform for train, validate, and test
+    train_transform = transforms.Compose([
         transforms.Resize(224),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.RandomHorizontalFlip(0.5),
+        transforms.RandomAffine(5, translate=(0, 0.1), scale=(0.9, 1.1), shear=(-5, 5),),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
+    ])
+
+    validate_test_transform = transforms.Compose([
+        transforms.Resize(224),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.ToTensor(),
     ])
 
     # define dataset
-    train_data = datasets.ImageFolder(root='data/train',
-                                         transform=transform)
-    test_data = datasets.ImageFolder(root='data/test',
-                                        transform=transform)
-
-    # define dataset
-    train_dataset = KaggleDataset(train_data)
-    test_dataset = KaggleDataset(test_data)
-
-    # split train dataset into train and validate
-    train_size = int(len(train_dataset) * 0.8)
-    validate_size = len(train_dataset) - train_size
-    train_dataset, validate_dataset = torch.utils.data.random_split(train_dataset, [train_size, validate_size])
+    train_dataset = KaggleDataset(train_data, transform=train_transform)
+    validate_dataset = KaggleDataset(validate_data, transform=validate_test_transform)
+    test_dataset = KaggleDataset(test_data, transform=validate_test_transform, test=True)
 
     # define sampler for class balancing
     train_sampler = build_balancing_sampler(train_dataset)

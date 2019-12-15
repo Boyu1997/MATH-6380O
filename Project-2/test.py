@@ -1,7 +1,7 @@
 import torch
 import pandas as pd
 
-from model import vgg16
+from model import TinyClassifier2d
 from load_data import load_data
 
 def model_test(model, loader, device):
@@ -33,9 +33,9 @@ print ('Using device:', device)
 _, _, test_loader = load_data()
 
 best_epoch = 30
-best_vgg16 = torch.load('./save/vgg16/train/epoch-{:02d}.pth'.format(best_epoch), map_location=device)
-vgg16 = vgg16()
-vgg16.load_state_dict(best_vgg16)
+best = torch.load('./save/tiny/train/epoch-{:02d}.pth'.format(best_epoch), map_location=device)
+tiny = TinyClassifier2d()
+tiny.load_state_dict(best)
 
-df = model_test(vgg16, test_loader, device)
-df.to_csv('vgg16_result.csv', index=False)
+df = model_test(tiny, test_loader, device)
+df.to_csv('tiny_result.csv', index=False)
