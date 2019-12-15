@@ -27,7 +27,7 @@ class KaggleDataset(Dataset):
 
 def build_balancing_sampler(dataset):
     weights = []
-    for data, label, _ in dataset:
+    for data, label in dataset:
         if label:
             weights.append(0.9)
         else:
