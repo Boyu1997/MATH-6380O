@@ -13,7 +13,7 @@ def train(model, device, train_loader, optimizer, criterion, one_batch):
 
     for data in train_loader:
         # get inputs and labels from data
-        inputs, labels, _ = data
+        inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
 
         # zero the parameter gradients
@@ -46,7 +46,7 @@ def validate(model, device, validate_loader, criterion, one_batch):
     with torch.no_grad():
         for data in validate_loader:
             # get inputs and labels from data
-            inputs, labels, _ = data
+            inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
 
             # model output

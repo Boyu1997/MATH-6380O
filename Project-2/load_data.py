@@ -23,7 +23,7 @@ class KaggleDataset(Dataset):
             img = self.imgs[idx][0].split("/")[-1].split(".")[0]
             return data, label, img
         else:
-            return data, label, 0
+            return data, label
 
 def build_balancing_sampler(dataset):
     weights = []
